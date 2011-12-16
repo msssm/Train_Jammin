@@ -53,11 +53,11 @@ if File ~= -1,
     
     [WallRows, WallCols, V] = find(F == 0);
     %   Plot Walls
-    p = plot(WallCols, WallRows, '.k');
+    p = plot(WallCols, m - WallRows + 1, '.k');
     set(p, 'MarkerSize', 10);
     
     %   Plot Exits
-    p = plot(ExitRows, ExitCols, '.r');
+    p = plot(ExitCols, m - ExitRows + 1, '.r');
     set(p, 'MarkerSize', 20);
     
     %   Print to file

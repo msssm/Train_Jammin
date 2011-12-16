@@ -34,26 +34,26 @@ Vectorfields        =   preprocessSituation(Map, Layers);
 [m, n, nGroups]     =   size(Layers);
 
 %   Define variables neede for the simulation.
-T                   =   400;
+T                   =   20;
 dt                  =   0.1;
 Lambda              =   0.65;
 ExitRadius          =   1.5;
 pInfArea            =   1;
-sInfArea            =   6;
+sInfArea            =   10;
 wInfArea            =   2;
-nPassengers         =   40;
-nTotalPassengers    =   nPassengers * nGroups;
 fField              =   10;
 fForceStretch       =   5;
 spawnSecurityFactor =   1.5;
+
+
 
 %************************************************************************%
 %   Default Values:                                                      %
 %                                                                        %       
 %   Change these values to adjust default behaviour.                     %
 %************************************************************************%
-Defaults.Interactionstrength.Physical   =   40;
-Defaults.Interactionstrength.Social     =   20;
+Defaults.Interactionstrength.Physical   =   20;
+Defaults.Interactionstrength.Social     =   60;
 Defaults.Interactionstrength.Wall       =   300;
 Defaults.Interactionrange.Physical      =   pInfArea;
 Defaults.Interactionrange.Social        =   sInfArea;
@@ -63,6 +63,9 @@ Defaults.Weight.Maximum                 =   80;
 Defaults.Weight.Heavy                   =   1e10;
 Defaults.Radius.Minimum                 =   2;
 Defaults.Radius.Maximum                 =   6;
+Defaults.Aggression.Maximum             =   50;
+Defaults.Aggression.Minimum             =   10;
+Defaults.nPassengers                    =   20;
 %************************************************************************%
 %   Explanation:                                                         %
 %                                                                        %
@@ -88,12 +91,22 @@ Defaults.Radius.Maximum                 =   6;
 %   nSpawned    |   The number of passengers of that group that have
 %               |   allready started walking.
 %   pIndex      |   Index in the passenger array where the group starts.
-Groups(:).isFinished    =   0;
-Groups(:).nSpawned      =   0;
+Groups(nGroups).isFinished    =   0;
+Groups(nGroups).nSpawned      =   0;
 
 %   Extract every start and end from the k layers.
 Groups(nGroups).Starts(1).Position  = [0; 0];
 Groups(nGroups).Ends(1).Position    = [0; 0];
+
+%   If you want to add custom information, set this value to 1 for a group.
+Groups(nGroups).Custom = 0;
+Groups(nGroups).Aggression.Minimum = 0;
+Groups(nGroups).Aggression.Maximum = 0;
+Groups(nGroups).Radius.Minimum = 0;
+Groups(nGroups).Radius.Maximum = 0;
+Groups(nGroups).Weight.Minimum = 0;
+Groups(nGroups).Weight.Maximum = 0;
+Groups(nGroups).nPassengers = 0;
 
 %   Count exits and spawns.
 nSpawns = 0;
@@ -116,11 +129,28 @@ for i = 1:nGroups,
     for j = 1:nEnds,
         Groups(i).Ends(j).Position   = [EndCol(j); EndRow(j)];
     end
-    %   Set starting index.
-    Groups(i).pIndex = (i - 1)*nPassengers + 1;
+    
+    Groups(i).Aggression.Maximum = Defaults.Aggression.Maximum;
+    Groups(i).Aggression.Minimum = Defaults.Aggression.Minimum;
+    Groups(i).Radius.Maximum = Defaults.Radius.Maximum;
+    Groups(i).Radius.Minimum = Defaults.Radius.Minimum;
+    Groups(i).Weight.Minimum = Defaults.Weight.Minimum;
+    Groups(i).Weight.Maximum = Defaults.Weight.Maximum;
+    Groups(i).nPassengers = Defaults.nPassengers;
+end
+
+%   Load custom group information.
+run customGroups;
+
+%   Get nTotalPassengers.
+nTotalPassengers = 0;
+for i = 1:nGroups,
+    nTotalPassengers = nTotalPassengers + Groups(i).nPassengers;
 end
 
 %   If no specific markers should be use, set CustomMarkers to 0.
+%
+%   Custom markers are the marker settings used to draw a group.
 CustomMarkers = 1;
 for i = 1:nGroups,
     Groups(i).Marker = '.b';
@@ -243,30 +273,36 @@ Passengers(nTotalPassengers).Group        =   0;
 Passengers(nTotalPassengers).Radius       =   0;
 Passengers(nTotalPassengers).Aggression   =   0;
 
-for i = 1:nTotalPassengers,
-    %   Create random weight for every passenger.
-    Passengers(i).Weight    =   unidrnd(Defaults.Weight.Maximum - Defaults.Weight.Minimum) + Defaults.Weight.Minimum;
-    %   Determine group for every passenger.
-    Passengers(i).Group     =   mod(i, nGroups) + 1;
-    %   Determine random aggression for every passenger.
-    Passengers(i).Aggression   =    unidrnd(30);
-    %   Initialize every field.
-    Passengers(i).Position     =   [0;     0];
-    Passengers(i).OldPosition  =   [eps;   0];
-    Passengers(i).Finished     =   0;
-    Passengers(i).Started      =   0;
-    Passengers(i).FieldForce   =   [0;     0];
-    Passengers(i).SocialForce  =   [0;     0];
-    Passengers(i).RejectForce  =   [0;     0];
-    Passengers(i).WallForce    =   [0;     0];
-    Passengers(i).TotalForce   =   [0;     0];
+pNo = 1;
+for i = 1:nGroups,
+    nPassengers = Groups(i).nPassengers;
+    for j = 1:nPassengers,
+        %   Create random weight for every passenger.
+        Passengers(pNo).Weight    =   unidrnd(Groups(i).Weight.Maximum - Groups(i).Weight.Minimum) + Groups(i).Weight.Minimum;
+        %   Determine group for every passenger.
+        Passengers(pNo).Group     =   i;
+        %   Determine random aggression for every passenger.
+        Passengers(pNo).Aggression   =    unidrnd(Groups(i).Aggression.Maximum - Groups(i).Aggression.Minimum) + Groups(i).Aggression.Minimum;
+        %   Initialize every field.
+        Passengers(pNo).Position     =   [0;     0];
+        Passengers(pNo).OldPosition  =   [eps;   0];
+        Passengers(pNo).Finished     =   0;
+        Passengers(pNo).Started      =   0;
+        Passengers(pNo).FieldForce   =   [0;     0];
+        Passengers(pNo).SocialForce  =   [0;     0];
+        Passengers(pNo).RejectForce  =   [0;     0];
+        Passengers(pNo).WallForce    =   [0;     0];
+        Passengers(pNo).TotalForce   =   [0;     0];
 
-    Passengers(i).Interactionstrength.Physical     =   Defaults.Interactionstrength.Physical;
-    Passengers(i).Interactionstrength.Social       =   Defaults.Interactionstrength.Social;
-    Passengers(i).Interactionstrength.Wall         =   Defaults.Interactionstrength.Wall;
-    Passengers(i).Interactionrange.Physical        =   Defaults.Interactionrange.Physical;
-    Passengers(i).Interactionrange.Social          =   Defaults.Interactionrange.Social;
-    Passengers(i).Interactionrange.Wall            =   Defaults.Interactionrange.Wall;
+        Passengers(pNo).Interactionstrength.Physical     =   Defaults.Interactionstrength.Physical;
+        Passengers(pNo).Interactionstrength.Social       =   Defaults.Interactionstrength.Social;
+        Passengers(pNo).Interactionstrength.Wall         =   Defaults.Interactionstrength.Wall;
+        Passengers(pNo).Interactionrange.Physical        =   Defaults.Interactionrange.Physical;
+        Passengers(pNo).Interactionrange.Social          =   Defaults.Interactionrange.Social;
+        Passengers(pNo).Interactionrange.Wall            =   Defaults.Interactionrange.Wall;
+        
+        pNo = pNo + 1;
+    end
 end
 
 %   Find the maximum radius for every group.
@@ -274,19 +310,19 @@ Spawns = getSpawns(Passengers, Groups, Walls);
 for i = 1:nGroups,
     Starts = Spawns(i).Starts;
     MaxRadius = max(Starts) - spawnSecurityFactor;
-    if MaxRadius > Defaults.Radius.Maximum,
-        MaxRadius = Defaults.Radius.Maximum;
+    if MaxRadius > Groups(i).Radius.Maximum,
+        MaxRadius =  Groups(i).Radius.Maximum;
     end
     Groups(i).MaxRadius = MaxRadius;
-    if Groups(i).MaxRadius <= Defaults.Radius.Minimum,
+    if Groups(i).MaxRadius <= Groups(i).Radius.Minimum,
         clear all;
-        error('Maximum Radius is smaller then default minimum radius. Change map please.');
+        error('Maximum Radius is smaller then group minimum radius. Change map please.');
     end
 end
 
 %   Give every passenger a valid radius.
 for i = 1:nTotalPassengers,
-    Passengers(i).Radius = mod(rand, Groups(Passengers(i).Group).MaxRadius - Defaults.Radius.Minimum) + Defaults.Radius.Minimum;
+    Passengers(i).Radius = mod(rand, Groups(Passengers(i).Group).MaxRadius - Groups(Passengers(i).Group).Radius.Minimum) + Groups(Passengers(i).Group).Radius.Minimum;
 end
 
 %   Sort accordng to group index.
