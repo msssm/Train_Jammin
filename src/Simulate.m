@@ -48,7 +48,7 @@ close all;
 movieCount = 1;
 Movie = avifile(['Output' num2str(movieCount) '.avi'], 'compression', 'None'); 
 gcf;
-%set(gcf, 'visible', 'off', 'units', 'normalized', 'outerposition', [0 0 1 1]);
+set(gcf, 'visible', 'off', 'units', 'normalized', 'outerposition', [0 0 1 1]);
 
 %   Measure time in full steps
 time = 0;
@@ -69,6 +69,8 @@ for t = 1:dt:T,
             Spawns = getSpawns(Passengers, Groups, Walls);
             nStarts = length(Spawns(Passengers(pNo).Group).Starts);
             for sNo = 1:nStarts,
+                Radius = Passengers(pNo).Radius;
+                Start = Spawns(Passengers(pNo).Group).Starts(sNo);
                 if Spawns(Passengers(pNo).Group).Starts(sNo) > Passengers(pNo).Radius + spawnSecurityFactor,
                     %   The passenger can start at this position.
                     Passengers(pNo).Position = Groups(Passengers(pNo).Group).Starts(sNo).Position;
@@ -230,7 +232,7 @@ for t = 1:dt:T,
                 Phi = acos(dot(Direction, Move));
                 
                 Passengers(pNo).SocialForce = Passengers(pNo).SocialForce...
-                    + ((Lambda + (1 - Lambda)*(1 + cos(Phi)))/2)...
+                    + (Lambda + (1 - Lambda)*(1 + cos(Phi))/2)...
                     *Passengers(pNo).Interactionstrength.Social...
                     *exp(1 - Distance/Passengers(pNo).Interactionrange.Social)*Direction;
                 
@@ -290,23 +292,16 @@ for t = 1:dt:T,
     hold on;
     plot(ExitPositions(1, :), m - ExitPositions(2, :) + 1, '.r', 'MarkerSize', 30);
     
-    %   Plot Spawn points
-    SpawnPositions      = zeros(2, nSpawns);
-    MatrixPosition      = 1;
-    for i = 1:nGroups,
-        Spawns = [Groups(i).Starts.Position];
-        nStarts = length(Spawns(1, :));
-        SpawnPositions(:, MatrixPosition:MatrixPosition+nStarts-1) = Spawns;
-        MatrixPosition = MatrixPosition + nStarts;
-    end
-    plot(SpawnPositions(1,:), m - SpawnPositions(2, :) + 1, '.g', 'MarkerSize', 30);
-    
     %   Plot Passengers
     for i = 1:nTotalPassengers,
         Started     = Passengers(i).Started;
         Finished    = Passengers(i).Finished;
         if Started == 1 && Finished == 0,
-            plot(Passengers(i).Position(1), m - Passengers(i).Position(2) + 1, '.bl', 'MarkerSize', 20 + 3*Passengers(i).Radius);
+            if CustomMarkers,
+                plot(Passengers(i).Position(1), m- Passengers(i).Position(2) + 1, Groups(Passengers(i).Group).Marker, 'MarkerSize', 20 + 3*Passengers(i).Radius);
+            else
+                plot(Passengers(i).Position(1), m - Passengers(i).Position(2) + 1, '.bl', 'MarkerSize', 20 + 3*Passengers(i).Radius);
+            end
         end
     end
     xlim([0 n+1]);
@@ -314,8 +309,7 @@ for t = 1:dt:T,
     title(num2str(t));
     
     %   Add Frame to movie.
-    Frame = getframe(gcf);
-    Movie = addframe(Movie, Frame);
+    Movie = addframe(Movie, gcf);
     
     %   Clear trash.
     clear WallPositions ExitPositions MatrixPosition i Ends nEnds Spawns nStarts SpawnPositions StartedMatrix FinishedMatrix Started Finished;
@@ -323,7 +317,7 @@ for t = 1:dt:T,
         %   Add another 25 frames without any passenger moving to fade the
         %   result out.
         for i = 1:25,
-            Movie = addframe(Movie, Frame);
+            Movie = addframe(Movie, gcf);
         end
         break;
     end
