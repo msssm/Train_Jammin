@@ -69,8 +69,6 @@ for t = 1:dt:T,
             Spawns = getSpawns(Passengers, Groups, Walls);
             nStarts = length(Spawns(Passengers(pNo).Group).Starts);
             for sNo = 1:nStarts,
-                Radius = Passengers(pNo).Radius;
-                Start = Spawns(Passengers(pNo).Group).Starts(sNo);
                 if Spawns(Passengers(pNo).Group).Starts(sNo) > Passengers(pNo).Radius + spawnSecurityFactor,
                     %   The passenger can start at this position.
                     Passengers(pNo).Position = Groups(Passengers(pNo).Group).Starts(sNo).Position;
