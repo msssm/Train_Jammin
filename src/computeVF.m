@@ -47,17 +47,18 @@ if File ~= -1,
     D(D == inf) = 0;
     contour(D);
     hold on;
-     
+    x = 1:4:n;
+    y = 1:4:m;
     %   Plot Vectorfield
-    quiver(VFX, VFY, 2);  
+    quiver(x, y, VFX(1:4:m,1:4:n), VFY(1:4:m, 1:4:n));  
     
     [WallRows, WallCols, V] = find(F == 0);
     %   Plot Walls
-    p = plot(WallCols, m - WallRows + 1, '.k');
+    p = plot(WallCols, WallRows, '.k');
     set(p, 'MarkerSize', 10);
     
     %   Plot Exits
-    p = plot(ExitCols, m - ExitRows + 1, '.r');
+    p = plot(ExitCols, ExitRows, '.r');
     set(p, 'MarkerSize', 20);
     
     %   Print to file
