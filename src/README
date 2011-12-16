@@ -1,5 +1,14 @@
 To setup the source code for your own map, do the following:
 
+Prerequisites: 	You need the toolbox fast marching.
+		See in the documentation, in the chapter about path finding.
+
+		Hint: 	There's a bug in compile_mex. You need to delete the
+			code lines five and six. And make sure you read the 
+			html readme. Then don't forget to switch to the 
+			toolbox directory to compile the mexes. 
+			And thank me for saving your time ;)
+
 1.	Your map must only contain colorcodes as in loadSituation.m
 2.	Write a *.txt file which contains absolute paths in the following order:		- Map
 		- Layer1
