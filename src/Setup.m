@@ -40,7 +40,7 @@ Lambda              =   0.7;
 ExitRadius          =   1.5;
 pInfArea            =   1.5;
 sInfArea            =   15;
-wInfArea            =   3;
+wInfArea            =   1.5;
 nPassengers         =   40;
 nTotalPassengers    =   nPassengers * nGroups;
 fField              =   20;
@@ -52,9 +52,9 @@ spawnSecurityFactor =   1.5;
 %                                                                        %       
 %   Change these values to adjust default behaviour.                     %
 %************************************************************************%
-Defaults.Interactionstrength.Physical   =   17;
+Defaults.Interactionstrength.Physical   =   12;
 Defaults.Interactionstrength.Social     =   30;
-Defaults.Interactionstrength.Wall       =   50;
+Defaults.Interactionstrength.Wall       =   180;
 Defaults.Interactionrange.Physical      =   pInfArea;
 Defaults.Interactionrange.Social        =   sInfArea;
 Defaults.Interactionrange.Wall          =   wInfArea;
@@ -134,18 +134,9 @@ nWalls = length(WallRow);
 Walls(nWalls).Position      =   [0;     0];
 Walls(nWalls).Weight        =   Defaults.Weight.Heavy;
 Walls(nWalls).Unneeded      =   0;
-Walls(nWalls).Situation.Y   =   0;
-Walls(nWalls).Situation.X   =   0;
-%   Information about the Situation field:
-%
-%   This field describes the positioning inside other walls.
-%   0 => no Wall on the left/up and right/low side.
-%   -1 => just a wall on the left/up, no wall on the right/low side.
-%   -2 => just a wall on the right/low, no wall on the left/up side.
-%   -3 => a wall on both the left/up and right/down side.
 
 for i = 1:nWalls,
-    Walls(i).Position       =   [WallCol(i); WallRow(i)];
+    Walls(i).Position       =   [WallCol(i) + 0.5; WallRow(i) + 0.5];
     Walls(i).Weight         =   Defaults.Weight.Heavy;
     Walls(i).Unneeded       =   0;
 end
@@ -166,24 +157,8 @@ end
 %   phase, performance is not THAT important. You can cut the contents of
 %   this loop into the upper loop if you want.
 for i = 1:nWalls,
-    x = Walls(i).Position(1);
-    y = Walls(i).Position(2);
-    
-    if x > 1 && Map(y, x - 1) == 0,
-        %   There is a wall on the left.
-        Walls(i).Situation.X = Walls(i).Situation.X - 1;
-    end
-    if x < n && Map(y, x + 1) == 0,
-        %   There is a wall on the right.
-        Walls(i).Situation.X = Walls(i).Situation.X - 2;
-    end
-    if y > 1 && Map(y - 1, x) == 0,
-        %   There is a wall above.
-        Walls(i).Situation.Y = Walls(i).Situation.Y - 1;
-    end
-    if y < m && Map(y + 1, x) == 0,
-        Walls(i).Situation.Y = Walls(i).Situation.Y - 2;
-    end
+    x = Walls(i).Position(1) - 0.5;
+    y = Walls(i).Position(2) - 0.5;
     if y == 1 || x == 1 || y == m || x == n,
         continue;
     end

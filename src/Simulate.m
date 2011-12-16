@@ -48,7 +48,7 @@ close all;
 movieCount = 1;
 Movie = avifile(['Output' num2str(movieCount) '.avi'], 'compression', 'None'); 
 gcf;
-set(gcf, 'visible', 'off', 'units', 'normalized', 'outerposition', [0 0 1 1]);
+%set(gcf, 'visible', 'off', 'units', 'normalized', 'outerposition', [0 0 1 1]);
 
 %   Measure time in full steps
 time = 0;
@@ -157,29 +157,28 @@ for t = 1:dt:T,
                 WallIntStrength = Passengers(pNo).Interactionstrength.Wall;
                 WallIntRange    = Passengers(pNo).Interactionrange.Wall;
                 
-                %   Now we need the correct normal direction.
-                %   First of all, get the passengers direction to the wall.
                 Direction = Passengers(pNo).Position - Walls(wNo).Position;
-                %   Normalize it.
                 Direction = Direction./Distance;
-                %   Calculate the force strength.
+                
                 ForceStrength = WallIntStrength * exp(-Distance/WallIntRange);
-                        
-                %   No Wall elements in y direction.
-                if Walls(wNo).Situation.Y == 0,
-                    %   No Wall elements in x direction
-                    if Walls(wNo).Situation.X == 0,
-                        %   Simply apply normalized direction
-                        Passengers(pNo).WallForce = Passengers(pNo).WallForce + ForceStrength * Direction;
-                    %   Wall elements on the left side.
-                    elseif Walls(wNo).Situation.X == -1,
-                        if Passengers(pNo).Position(1) < Walls(wNo).Position(1),
-                            yPos = sign(Direction(2));
-                            %   yPos is 1, if the passenger is bellow the
-                            %   wall and -1 if it is above the wall.
+                
+                %   Check passenger position.
+                if  Passengers(pNo).Position(1) > Walls(wNo).Position(1) - 0.5 &&...
+                    Passengers(pNo).Position(1) < Walls(wNo).Position(1) + 0.5 ,
+                    yPos = sign(Direction(2));
+                    %   1  => Passenger is below wall
+                    %   -1 => Passenger is above wall.
+                    Passengers(pNo).WallForce = Passengers(pNo).WallForce + ForceStrength * [0; yPos];
+                elseif Passengers(pNo).Position(2) > Walls(wNo).Position(2) - 0.5 &&...
+                       Passengers(pNo).Position(2) < Walls(wNo).Position(2) + 0.5,
+                   xPos = sign(Direction(1));
+                   %    1  => Passenger is right of the wall
+                   %    -1 => Passenger is left of the wall
+                   Passengers(pNo).WallForce = Passengers(pNo).WallForce + ForceStrength * [xPos; 0];
+                end
             end
         end
-        clear Direction Distance ForceStrength WallIntStrength WallIntRange;
+        clear Direction Distance ForceStrength WallIntStrength WallIntRange xPos yPos;
         
         %   3.  Passenger physical force.
         %
