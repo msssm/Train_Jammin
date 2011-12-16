@@ -13,9 +13,5 @@
 %       -   Weight.Minimum
 %       -   Weight.Maximum
 Groups(1).nPassengers = 40;
-
-Groups(2).nPassengers = 2;
-Groups(2).Aggression.Minimum = 51;
-Groups(2).Aggression.Maximum = 80;
 %=======================================================================%
 %=======================================================================%

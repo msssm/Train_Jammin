@@ -34,14 +34,14 @@ Vectorfields        =   preprocessSituation(Map, Layers);
 [m, n, nGroups]     =   size(Layers);
 
 %   Define variables neede for the simulation.
-T                   =   20;
+T                   =   500;
 dt                  =   0.1;
 Lambda              =   0.65;
 ExitRadius          =   1.5;
 pInfArea            =   1;
-sInfArea            =   10;
+sInfArea            =   6;
 wInfArea            =   2;
-fField              =   10;
+fField              =   15;
 fForceStretch       =   5;
 spawnSecurityFactor =   1.5;
 
@@ -52,8 +52,8 @@ spawnSecurityFactor =   1.5;
 %                                                                        %       
 %   Change these values to adjust default behaviour.                     %
 %************************************************************************%
-Defaults.Interactionstrength.Physical   =   20;
-Defaults.Interactionstrength.Social     =   60;
+Defaults.Interactionstrength.Physical   =   10;
+Defaults.Interactionstrength.Social     =   40;
 Defaults.Interactionstrength.Wall       =   300;
 Defaults.Interactionrange.Physical      =   pInfArea;
 Defaults.Interactionrange.Social        =   sInfArea;
@@ -155,7 +155,6 @@ CustomMarkers = 1;
 for i = 1:nGroups,
     Groups(i).Marker = '.b';
 end
-Groups(2).Marker = '.g';
 
 %   Description of the wall array format:
 %   =====================================================================
