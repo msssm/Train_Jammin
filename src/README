@@ -1,0 +1,11 @@
+To setup the source code for your own map, do the following:
+
+1.	Your map must only contain colorcodes as in loadSituation.m
+2.	Write a *.txt file which contains absolute paths in the following order:		- Map
+		- Layer1
+		- Layer2
+		- ...
+		- Layer#n
+3.	Make your changes to customGroups.m.
+4.	Change the first few variables in Setup.m.
+5.	You should be good to go.

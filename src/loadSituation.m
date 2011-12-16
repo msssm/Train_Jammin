@@ -11,7 +11,8 @@ function [Map, Layers] = loadSituation()
 %   Black               000000      Wall.
 %   Red                 FF0000      Target for a group.
 %   Green               0000FF      Start for a group.
-%   Yellow              FFFF00      Slow areas (stairs etc. ).
+%   Yellow              FFFF00      Slow areas (stairs etc. ).		==> NOT IMPLEMENTED YET
+%	Blue 				0000FF		Safety area. 					==> NOT IMPLEMENTED YET
 %
 %   The output map - matrix contains:
 %   0 => Wall, 1 => Free space, 2 => slow area, 3 => safety area
