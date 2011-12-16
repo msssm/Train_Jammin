@@ -14,7 +14,7 @@ function [Map, Layers] = loadSituation()
 %   Yellow              FFFF00      Slow areas (stairs etc. ).
 %
 %   The output map - matrix contains:
-%   0 => Wall, 1 => Free space, 2 => slow area
+%   0 => Wall, 1 => Free space, 2 => slow area, 3 => safety area
 %
 %   The output layer - matrices contain:
 %   1 => Free space, 2 => starting point, Inf => ending point
@@ -46,9 +46,10 @@ rawMap = imread(S{1,1});
 walls = findColor(rawMap, 0, 0, 0);
 space = findColor(rawMap, 255, 255, 255);
 slow  = findColor(rawMap, 255, 255, 0);
+safety= findColor(rawMap, 0, 0, 255);
 
 [lines, columns, depth] = size(rawMap);
-if (length(walls) + length(space) + length(slow)) ~= lines*columns,
+if (length(walls) + length(space) + length(slow) + length(safety)) ~= lines*columns,
     error('Invalid input map.');
 end
 
@@ -56,6 +57,7 @@ Map = zeros(lines, columns);
 Map(walls) = 0;
 Map(space) = 1;
 Map(slow)  = 2;
+Map(safety)= 3;
 
 %Add a wall around the map.
 Map(:, 1)       = 0;

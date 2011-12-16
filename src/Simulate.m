@@ -134,13 +134,14 @@ for t = 1:dt:T,
         col = int16(Position(1));
         
         if row <= 0 || col <= 0 || row > m || col > n,
+            Movie = close(Movie);
             error('Passenger walked to an invalid position.');
         end
         
         Field = Vectorfields{Passengers(pNo).Group};
         Passengers(pNo).FieldForce = [Field(row, col, 1); Field(row, col, 2)] * (Passengers(pNo).Aggression + fField);
         
-        clear row col Position;
+        clear Position Field;
         
         %   2.  Wall force.
         %   
@@ -155,22 +156,30 @@ for t = 1:dt:T,
             if Distance < Passengers(pNo).Radius + wInfArea,
                 WallIntStrength = Passengers(pNo).Interactionstrength.Wall;
                 WallIntRange    = Passengers(pNo).Interactionrange.Wall;
-                %   Now we need the direction of the passenger to be
-                %   pushed.
+                
+                %   Now we need the correct normal direction.
+                %   First of all, get the passengers direction to the wall.
                 Direction = Passengers(pNo).Position - Walls(wNo).Position;
-                if Direction(1) > Direction(2),
-                    Direction(2) = 0;
-                elseif Direction(2) > Direction(1),
-                    Direction(1) = 0;
-                end
-                %   Normalize direction vector.
-                Driection = Direction ./ norm(Direction);
-                %   Now we need the weight of the force.
-                Weight = WallIntStrength * exp( -Distance/WallIntRange );
-                Passengers(pNo).WallForce = Passengers(pNo).WallForce + Weight * Direction;
+                %   Normalize it.
+                Direction = Direction./Distance;
+                %   Calculate the force strength.
+                ForceStrength = WallIntStrength * exp(-Distance/WallIntRange);
+                        
+                %   No Wall elements in y direction.
+                if Walls(wNo).Situation.Y == 0,
+                    %   No Wall elements in x direction
+                    if Walls(wNo).Situation.X == 0,
+                        %   Simply apply normalized direction
+                        Passengers(pNo).WallForce = Passengers(pNo).WallForce + ForceStrength * Direction;
+                    %   Wall elements on the left side.
+                    elseif Walls(wNo).Situation.X == -1,
+                        if Passengers(pNo).Position(1) < Walls(wNo).Position(1),
+                            yPos = sign(Direction(2));
+                            %   yPos is 1, if the passenger is bellow the
+                            %   wall and -1 if it is above the wall.
             end
         end
-        clear Direction Distance Weight WallIntStrength WallIntRange;
+        clear Direction Distance ForceStrength WallIntStrength WallIntRange;
         
         %   3.  Passenger physical force.
         %
@@ -306,7 +315,8 @@ for t = 1:dt:T,
     title(num2str(t));
     
     %   Add Frame to movie.
-    Movie = addframe(Movie, gcf);
+    Frame = getframe(gcf);
+    Movie = addframe(Movie, Frame);
     
     %   Clear trash.
     clear WallPositions ExitPositions MatrixPosition i Ends nEnds Spawns nStarts SpawnPositions StartedMatrix FinishedMatrix Started Finished;
@@ -314,7 +324,7 @@ for t = 1:dt:T,
         %   Add another 25 frames without any passenger moving to fade the
         %   result out.
         for i = 1:25,
-            Movie = addframe(Movie, gcf);
+            Movie = addframe(Movie, Frame);
         end
         break;
     end
