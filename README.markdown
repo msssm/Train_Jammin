@@ -1,6 +1,6 @@
 MATLAB FS11 – Research Plan
 
-Trail formation
+Train Jammin
 ===============
 
 > **Document Version:**  1
